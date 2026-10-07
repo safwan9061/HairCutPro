@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>HairCutPro Socket Test</title>
+
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      width: 400px;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    #status {
+      font-weight: bold;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+
+    <h1>HairCutPro</h1>
+
+    <h2>Socket.IO Test</h2>
+
+    <p id="status">
+      Connecting...
+    </p>
+
+  </div>
+
+  <script>
+
+  const ADMIN_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YWJiODk4MzA5NmJkMGIyNGZmNGVkOTUiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3OTA3NDk0NzUsImV4cCI6MTc5MTM1NDI3NX0.Ohm-dGMJanrNaGs7hLJUWoe86Vlgh1lvO6FLZFYij44";
+
+  console.log("Token exists:", !!ADMIN_TOKEN);
+  console.log("Token length:", ADMIN_TOKEN.length);
+
+  const socket = io("http://localhost:5000", {
+    auth: {
+      token: ADMIN_TOKEN
+    }
+  });
+
+  socket.on("connect", () => {
+
+    console.log("Connected:", socket.id);
+
+    document.getElementById("status").innerText =
+      "🟢 Connected to Server";
+
+    socket.emit("joinAdminRoom");
+
+  });
+
+  socket.on("adminRoomJoined", (data) => {
+
+    console.log("✅ ADMIN ROOM:", data);
+
+    document.getElementById("status").innerText =
+      "🟢 Admin Room Connected";
+
+  });
+
+  socket.on("adminAuthError", (data) => {
+
+    console.log("❌ ADMIN ERROR:", data);
+
+    document.getElementById("status").innerText =
+      "🔴 Admin Authentication Failed";
+
+  });
+
+  socket.on("newBooking", (booking) => {
+
+    console.log("🔔 New Booking:", booking);
+
+    alert(
+      "🔔 New Booking Received!\n\n" +
+      "Booking ID: " + booking.bookingId + "\n" +
+      "Start Time: " + booking.startTime + "\n" +
+      "End Time: " + booking.endTime + "\n" +
+      "Price: ₹" + booking.price
+    );
+
+  });
+
+  socket.on("disconnect", () => {
+
+    console.log("Disconnected");
+
+  });
+  // ==================== PAYMENT SUCCESS ====================
+
+socket.on("paymentSuccess", (payment) => {
+
+  console.log(
+    "💰 Payment Successful:",
+    payment
+  );
+
+  alert(
+    "💰 Payment Successful!\n\n" +
+    "Booking ID: " +
+    payment.bookingId +
+    "\nAmount: ₹" +
+    payment.amount +
+    "\nPayment Status: " +
+    payment.paymentStatus +
+    "\nBooking Status: " +
+    payment.bookingStatus
+  );
+
+});
+
+</script>
+</body>
+</html>
